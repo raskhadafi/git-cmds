@@ -1,1 +1,1 @@
-export PATH=$PATH:$(realpath -f ${0%/*})
+export PATH=$PATH:${BASH_SOURCE:-$0}
