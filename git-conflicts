@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# git-conflicts
+#
+# Created by: Roman Simecek <roman@good2go.ch>
+#
+
+usage() {
+  echo "usage: git conflict open|close"
+  echo " "
+  echo "By Roman Simecek"
+}
+
+source "$(git --exec-path)/git-sh-setup"
+source /usr/local/etc/bash_completion.d/git-prompt.sh
+
+main() {
+  if [ $# -lt 1 ] && ([ "$1" != "open" ] || [ "$1" != "close" ]); then
+    usage
+    exit 1
+  fi
+}
+
+_git_conflict() {
+  main
+}
+
+main "$@"

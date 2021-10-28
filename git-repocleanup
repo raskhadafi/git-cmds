@@ -1,0 +1,11 @@
+#!/usr/bin/env rvm default do ruby
+#
+# git-repocleanup
+#
+# Created by: Roman Simecek <roman.simecek@swisslife-select.ch>
+#
+
+require_relative "git_commander"
+
+ARGV.unshift("repocleanup")
+GitCommander.new.run if $0 == __FILE__

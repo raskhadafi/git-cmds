@@ -1,0 +1,72 @@
+#!/bin/sh
+#
+# git-release
+#
+# Created by: Roman Simecek <roman.simecek@good2go.ch>
+
+usage() {
+  echo "usage: git release <branch>"
+  echo " "
+  echo "By Roman Simecek"
+}
+
+source ~/.bash/colors.sh
+source "$(git --exec-path)/git-sh-setup"
+source /usr/local/etc/bash_completion.d/git-prompt.sh
+
+main() {
+  local branch_name=$1
+  local target_branch="master"
+  local current_folder=${PWD##*/}
+
+  if [ $# -lt 1 ]; then
+    usage
+    exit 1
+  fi
+
+  if [ "$branch_name" == "" ]; then
+    echo 'Branch is missing'
+    usage
+    exit 1
+  fi
+
+  local exists_local=$(git show-ref refs/heads/"$branch_name")
+
+  if [ -n "$exists_local" ]; then
+    if $(git diff-files --quiet --ignore-submodules --); then
+      echo "Do you want to merge '$branch_name' into '$target_branch' [Yn]: \c"
+      read -e prepare_release
+
+      if [ "$prepare_release" == "n" ]; then
+        exit
+      fi
+
+      git checkout "$target_branch"
+      git pull origin "$target_branch"
+      git merge "$branch_name"
+
+      echo "Do you want to delete '$branch_name' [yN]: \c"
+      read -e prepare_release
+
+      if [ "$prepare_release" == "y" ]; then
+        git branch -d "$branch_name"
+
+        if git ls-remote | grep -sw "$branch_name" 2>&1>/dev/null; then
+          git push origin :"$branch_name"
+        fi
+      fi
+    else
+      echo 'Aborting cause of uncommited files'
+      exit 1
+    fi
+  else
+    echo "Branch is missing or is not locally checked out."
+    exit 1
+  fi
+}
+
+_git_release() {
+  main
+}
+
+main "$@"
