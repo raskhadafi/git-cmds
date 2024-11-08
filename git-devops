@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# git-devops
+#
+# Created by: Roman Simecek <roman@gorillaz.dev>
+
+if [ $# -ne 1 ]; then
+    echo "Usage: git devops <id>"
+    exit 1
+fi
+
+id="$1"
+
+# Check for uncommitted changes
+if ! git diff-index --quiet HEAD --; then
+    echo "There are uncommitted changes. Please commit or stash them before proceeding."
+    exit 1
+fi
+
+# Define valid branch types
+branch_types="b c e f r s"
+
+# Check if branch with the given id exists
+existing_branch=$(git branch --list "*-ADO-$id-*")
+
+if [ -n "$existing_branch" ]; then
+    echo "Branch with id $id exists. Checking out the branch."
+    git checkout "$(echo "$existing_branch" | sed 's/* //')"
+else
+    # Prompt for branch type
+    echo "Select branch type:"
+    echo "  b(ug)"
+    echo "  c(hore)"
+    echo "  e(pic)"
+    echo "  f(eature)"
+    echo "  r(elease)"
+    echo "  s(print)"
+    echo -n "Enter branch type: "
+    read type
+
+    # Validate branch type
+    if ! echo "$branch_types" | grep -wq "$type"; then
+        echo "Invalid branch type."
+        exit 1
+    fi
+
+    # Prompt for branch name
+    echo -n "Enter branch name: "
+    read description
+
+    # Create the new branch
+    new_branch="$type-ADO-$id-RS-$description"
+    git checkout -b "$new_branch"
+fi
